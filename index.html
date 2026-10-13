@@ -86,11 +86,17 @@ const fmt = n => n ? '€' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') 
 const map = L.map('map', {scrollWheelZoom: false, touchZoom: true, zoomSnap: 0.25}).setView([36.45, -5.05], 10);
 // Trackpad pinch (ctrl+wheel) over the map: zoom the map, not the page.
 // Plain wheel (no ctrl) is left alone so the page scrolls normally.
+// NOTE: the target zoom is accumulated in pinchZoom because Leaflet snaps each
+// setZoomAround to zoomSnap increments, which would swallow tiny pinch deltas.
+var pinchZoom = null, lastPinchT = 0;
 document.getElementById('map').addEventListener('wheel', function (e) {
   if (!e.ctrlKey) return;
   e.preventDefault();
-  var pt = map.mouseEventToContainerPoint(e);
-  map.setZoomAround(pt, map.getZoom() - e.deltaY * 0.005);
+  var now = Date.now();
+  if (pinchZoom === null || now - lastPinchT > 400) pinchZoom = map.getZoom();
+  lastPinchT = now;
+  pinchZoom = Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), pinchZoom - e.deltaY * 0.01));
+  map.setZoomAround(map.mouseEventToContainerPoint(e), pinchZoom);
 }, {passive: false});
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
   attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom',
