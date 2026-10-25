@@ -182,7 +182,7 @@
         font-size: 0.8rem; font-weight: 800; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       }
       .pin > * { transform: rotate(45deg); }
-      .pin--on { background: var(--terra); }
+      .pin--on { transform: rotate(-45deg) scale(1.2); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45); }
 
       /* ---------- Place list (below the map) ---------- */
       .place-list { margin-top: 22px; }
@@ -293,7 +293,7 @@
           <div class="stat"><div class="num">3</div><div class="lab">Bathrooms</div></div>
           <div class="stat"><div class="num">≈118 m²</div><div class="lab">Interior living space</div></div>
           <div class="stat"><div class="num">≈218 m²</div><div class="lab">Terraces &amp; solarium</div></div>
-          <div class="stat"><div class="num">2</div><div class="lab">Floors, plus the rooftop</div></div>
+          <div class="stat"><div class="num">Two</div><div class="lab">Floors, with the solarium on top</div></div>
         </div>
 
         <p>The heart of the home is the <strong>open-plan kitchen and living room</strong>, which opens onto a long, south-facing terrace — our everyday living room for most of the year. Three bedrooms and two bathrooms sit on the main floor, and a fourth bedroom with its own bathroom is upstairs, right beside the solarium, so guests get a little world of their own.</p>
@@ -634,15 +634,20 @@
       });
       legend.innerHTML = legendHtml;
 
+      // Each pin is coloured by its category — the same colours as the
+      // legend and the list rows below. Our home keeps its terracotta.
+      var CATEGORY_COLORS = {};
+      CATEGORIES.forEach(function (cat) { CATEGORY_COLORS[cat.id] = cat.color; });
+
       var mapPlaces = [
-        { label: HOME.name, lat: HOME.lat, lng: HOME.lng, venue: "Idyllic — La Gaspara", locality: "Estepona" }
+        { label: HOME.name, lat: HOME.lat, lng: HOME.lng, venue: "Idyllic — La Gaspara", locality: "Estepona", pinColor: "#bc5f3a" }
       ].concat(NEARBY_PLACES.map(function (p) {
-        return { label: p.name, lat: p.lat, lng: p.lng, locality: "Estepona" };
+        return { label: p.name, lat: p.lat, lng: p.lng, locality: "Estepona", pinColor: CATEGORY_COLORS[p.category] || "#22708e" };
       }));
 
       // The place list below the map: its rows are in the page, grouped by
       // category. Collect them by data-place-index so orderedRows[i] is the
-      // row for mapPlaces[i] — mountPlaceListMap pairs each pin with its row,
+      // row for mapPlaces[i] — the mount below pairs each pin with its row,
       // so tapping a row selects the pin and selecting a pin highlights
       // (and scrolls to) its row.
       var orderedRows = [];
@@ -671,17 +676,33 @@
       if (window.MapHelpers && mapEl) {
         var mounted = null;
         try {
-          if (NEARBY_PLACES.length && orderedRows.length === mapPlaces.length) {
-            mounted = MapHelpers.mountPlaceListMap(mapEl,
-              { places: mapPlaces, rows: orderedRows, baseStyle: "light" },
-              showPlaceList);
-          } else {
-            mounted = MapHelpers.mountMap(mapEl,
-              { places: mapPlaces, baseStyle: "light" },
-              showPlaceList);
-          }
-          if (mounted === null && !NEARBY_PLACES.length) {
-            // mountMap already routed fatal errors to showPlaceList.
+          // Same row/pin pairing as MapHelpers.mountPlaceListMap, but with
+          // a custom marker so every pin carries its category colour.
+          var highlightRow = function (index, scroll) {
+            orderedRows.forEach(function (row, i) {
+              row.classList.toggle("map-selected", i === index);
+            });
+            if (scroll && index !== null && orderedRows[index]) {
+              orderedRows[index].scrollIntoView({ block: "nearest" });
+            }
+          };
+          mounted = MapHelpers.mountMap(mapEl, {
+            places: mapPlaces,
+            baseStyle: "light",
+            marker: function (place, index, selected) {
+              var color = place.pinColor || "#22708e";
+              return '<div class="pin' + (selected ? " pin--on" : "") +
+                '" style="background:' + color + '"><span>' + (index + 1) + "</span></div>";
+            },
+            onSelectPlace: function (index) { highlightRow(index, true); }
+          }, showPlaceList);
+          if (mounted && NEARBY_PLACES.length && orderedRows.length === mapPlaces.length) {
+            orderedRows.forEach(function (row, index) {
+              row.addEventListener("click", function () {
+                mounted.selectPlace(index);
+                highlightRow(index, false);
+              });
+            });
           }
         } catch (e) {
           showPlaceList();
