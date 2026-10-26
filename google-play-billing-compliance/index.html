@@ -330,7 +330,7 @@
           Nothing about this requires abandoning Stripe. The fix is to bring the existing
           Stripe flow inside the program — enroll, integrate the APIs, report, and pay the
           fee — or to restructure into one of the compliant shapes set out in
-          <a href="#paths">§7</a>.
+          <a href="#paths">§3</a>.
         </p>
       </div>
 
@@ -434,7 +434,7 @@
           <li>
             <div>
               <span class="s-title">Integrate the alternative billing APIs</span>
-              <p>Per the API integration guide — Play Billing Library 6.1+, the "alternative billing only" flow, and Google's information dialog before every Stripe checkout (details in §3).</p>
+              <p>Per the API integration guide — Play Billing Library 6.1+, the "alternative billing only" flow, and Google's information dialog before every Stripe checkout (details in §4).</p>
             </div>
           </li>
           <li>
@@ -461,222 +461,8 @@
         <div class="src">Program page, requirements and enrollment steps — <a href="https://support.google.com/googleplay/android-developer/answer/16497028?hl=en">answer/16497028</a></div>
       </section>
 
-      <section id="reporting">
-        <div class="sec-num">03 — THE REPORTING DUTY IN DETAIL</div>
-        <h2>How reporting actually works</h2>
-        <p class="sec-intro">
-          Reporting is a backend obligation, not an in-app one — and it's the piece most
-          unlike anything Stripe asks of you. The decisive line from Google's integration guide:
-        </p>
-        <blockquote>
-          <p>"All transactions made through an alternative billing system <strong>must be reported to Google Play by calling the Google Play Developer API from your backend within 24 hours</strong>, providing an <code>externalTransactionToken</code>… <strong>A new externalTransactionToken should be generated for each one-time purchase, each new subscription, and for any upgrade/downgrades to an existing subscription.</strong>"</p>
-          <div class="src">In-app integration guidance for alternative billing only — <a href="https://developer.android.com/google/play/billing/alternative/alternative-billing-without-user-choice-in-app?hl=en">developer.android.com/google/play/billing/alternative/…</a></div>
-        </blockquote>
-
-        <details>
-          <summary>In the app: Billing Library integration</summary>
-          <div class="d-body">
-            <ul>
-              <li>Use Play Billing Library <strong>version 6.1 or higher</strong> — the alternative billing APIs don't exist in earlier versions.</li>
-              <li>Initialize <code>BillingClient</code> with <code>enableAlternativeBillingOnly()</code>, connect to Play, and confirm availability with <code>isAlternativeBillingOnlyAvailableAsync</code>.</li>
-              <li>Before the Stripe flow, <strong>every time</strong>, show Google's information screen — it tells the user billing will not be managed by Google Play — by calling <code>showAlternativeBillingOnlyInformationDialog</code>. Proceed only on <code>BillingResponseCode.OK</code>.</li>
-              <li>Enrollment is enforced by the API itself: a <code>BILLING_UNAVAILABLE</code> response means the transaction "shouldn't proceed under this program… or your account has not been successfully enrolled in the program."</li>
-              <li>Obtain the reporting token in-app via <code>createAlternativeBillingOnlyReportingDetailsAsync</code> (returns <code>externalTransactionToken</code>) and pass it to your backend.</li>
-            </ul>
-          </div>
-        </details>
-
-        <details>
-          <summary>From the backend: the externaltransactions API</summary>
-          <div class="d-body">
-            <p>Report through the Google Play Developer API's <code>externaltransactions</code> endpoint <strong>after a payment has been authorized</strong>. Per the backend guide, this "applies to all transactions, including initial charges, renewals, refunds, and others" — including "$0 transactions resulting from free trial purchases."</p>
-            <ul>
-              <li><strong>Initial transaction</strong> (including a subscription's first charge): the <code>externalTransactionToken</code> is required in the request body, alongside pre-tax and tax amounts, <code>transactionTime</code>, and <code>userTaxAddress.regionCode</code>. Each report also carries a developer-generated unique <code>externalTransactionId</code> as a query parameter — it must contain no personally identifiable information. For subscriptions, set <code>externalSubscription.subscriptionType</code> to <code>RECURRING</code> (auto-renewing) or <code>PREPAID</code>.</li>
-              <li><strong>Renewals:</strong> the token is <em>not</em> needed. Send a new unique <code>externalTransactionId</code> for each renewal, with the initial transaction's ID in the <code>initialExternalTransactionId</code> field.</li>
-              <li><strong>Upgrades / downgrades:</strong> reported like a new purchase on the same endpoint, sending the <code>externalTransactionToken</code> provided for that transaction.</li>
-              <li><strong>Quota:</strong> 1,200 queries per minute on the create/refund external-transaction endpoints.</li>
-              <li>Reports for ineligible countries or unenrolled accounts are rejected server-side — you cannot report your way into compliance retroactively without enrolling first.</li>
-            </ul>
-            <div class="src">Backend integration guidance — <a href="https://developer.android.com/google/play/billing/outside-gpb-backend">developer.android.com/google/play/billing/outside-gpb-backend</a></div>
-          </div>
-        </details>
-
-        <details>
-          <summary>Refunds and cancellations — the two easy ones to get wrong</summary>
-          <div class="d-body">
-            <ul>
-              <li><strong>Refunds are reportable.</strong> Use the <code>refundexternaltransaction</code> endpoint, referencing the <code>externalTransactionId</code> "of the specific recurrence of the subscription that is being refunded." Refunding an entire subscription means a separate refund request per transaction — the initial charge plus every recurrence. Full and partial refunds are supported (a partial refund requires the refunded pre-tax amount).</li>
-              <li><strong>Cancellations are not.</strong> The guide defines no cancellation-transaction report — a cancellation authorizes no payment. Cancellation matters only on re-purchase: send a new external transaction ID "if the recurring transaction is canceled or expired and the same product is bought again later."</li>
-            </ul>
-          </div>
-        </details>
-      </section>
-
-      <section id="fees">
-        <div class="sec-num">04 — THE MONEY</div>
-        <h2>The fee: 10% on subscriptions, whatever the tier</h2>
-        <p class="sec-intro">
-          The US program's fee table has a new-vs-existing-install split (cutoff: June 30, 2026)
-          and a first-$1M tier — but for auto-renewing subscriptions none of that moves the
-          number. It is 10% in every row.
-        </p>
-        <div class="table-scroll">
-          <table class="fees">
-            <thead>
-              <tr>
-                <th scope="col">Tier</th>
-                <th scope="col" class="num">Auto-renewing subscriptions</th>
-                <th scope="col" class="num">Other digital — new installs</th>
-                <th scope="col" class="num">Other digital — existing installs</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>First $1M annual earnings</td>
-                <td class="num hl" data-label="Subscriptions">10%</td>
-                <td class="num" data-label="Other · new">10%</td>
-                <td class="num" data-label="Other · existing">10%</td>
-              </tr>
-              <tr>
-                <td>Standard service fee</td>
-                <td class="num hl" data-label="Subscriptions">10%</td>
-                <td class="num" data-label="Other · new">20%</td>
-                <td class="num" data-label="Other · existing">25%</td>
-              </tr>
-              <tr>
-                <td>Play Games Level Up / Apps Experience</td>
-                <td class="num hl" data-label="Subscriptions">10%</td>
-                <td class="num" data-label="Other · new">15%</td>
-                <td class="num" data-label="Other · existing">20%</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="table-note">Source: US alternative billing program page (answer/16497028), read October 26, 2026.</p>
-        <ul>
-          <li><strong>New installs:</strong> a transaction from a user whose first install or first update from Google Play occurred <strong>on or after June 30, 2026</strong>. <strong>Existing installs:</strong> before that date — June 30, 2026 is "the regional rollout date serving as the effective date." For a subscriptions-only app this distinction is academic; it bites only on non-subscription digital goods (20% vs 25% standard).</li>
-          <li>Stripe's own processing fees are separate and additional — Google's pages don't address them.</li>
-          <li><span class="flag">Context, secondary</span> Under Google's March 2026 global fee model, reporting describes the 10% as a <em>service</em> fee, with an additional 5% <em>billing</em> fee charged only when Google Play Billing is used — alternative billing avoids the billing fee but not the service fee. This split is not stated on the US program page itself.</li>
-        </ul>
-
-        <div class="callout amber">
-          <p class="c-title">The March 2026 settlement did not change any of this — and the court never approved it</p>
-          <p>
-            On March 4, 2026, Google and Epic entered a new settlement and asked the US District
-            Court to enter a revised "Modified Injunction" (RPMI) that would have <em>capped</em>
-            Google's service fees at 9% or 20% (depending on transaction type and install date)
-            through 2032. <strong>On July 15, 2026, the parties withdrew that joint motion.</strong>
-            Google's own page says only that "our current policies and programs remain in effect,"
-            and Google has confirmed it continues to comply with the original October 2024
-            permanent injunction — which remains the governing US instrument.
-          </p>
-          <p>
-            <span class="flag">Sources conflict</span> Several July 2026 headlines said the companies
-            "abandoned the settlement." MacRumors corrected its story: the <em>commercial</em>
-            settlement is intact and Google is lowering fees voluntarily, but the <em>court order</em>
-            embodying it was never entered. Any March 2026 coverage saying the settlement "was
-            approved by the court" is wrong. Either way, the RPMI would not have eliminated
-            enrollment or reporting — and Google switched both on, October 1, under its own
-            program terms after the withdrawal.
-          </p>
-          <p>
-            <span class="flag">In flux</span> Industry commentary contends the October 1 fee schedule
-            is Google's unilateral position, not court-approved, and may be challenged before
-            Judge Donato, who retains compliance oversight. No court ruling on the October 1 fees
-            was found in this research — treat the fees as payable now, but not necessarily
-            settled law.
-          </p>
-          <div class="src">Google US update page (answer/15582165); MLex, July 15, 2026; MacRumors, July 16, 2026 (updated); Engadget, July 15, 2026 — full links in Sources</div>
-        </div>
-      </section>
-
-      <section id="timeline">
-        <div class="sec-num">05 — HOW WE GOT HERE</div>
-        <h2>Timeline: what changed, and when duties switched on</h2>
-        <p class="sec-intro">
-          The key nuance: enrollment and API integration were conditions from the program's
-          launch. Only reporting and fee payment were deferred — phrased "once required" —
-          until Google's July 22, 2026 notice set the date.
-        </p>
-        <div class="timeline">
-          <div class="tl-row">
-            <span class="tl-date">Oct 29, 2025</span>
-            <p><span class="t-title">Injunction changes take effect (US)</span>For US mobile/tablet apps, Google stops requiring Google Play Billing and stops prohibiting other in-app payment methods and external links.</p>
-          </div>
-          <div class="tl-row">
-            <span class="tl-date">Dec 9, 2025</span>
-            <p><span class="t-title">The formal programs launch</span>Clarified Payments policy, the US alternative billing program "for all eligible developers serving US users," and the external content links program. Alternative billing is available "by complying with" these policies and programs — enrollment is a condition from this point.</p>
-          </div>
-          <div class="tl-row">
-            <span class="tl-date">Jan 28, 2026</span>
-            <p><span class="t-title">The December changes come into force</span><span class="flag">Secondary only</span>Secondary reporting consistently states the Dec 9 changes came into force on this date, ending the post-injunction transition for enrollment. No current Google primary page located in this research states January 28 explicitly — don't cite it as a Google-quoted deadline.</p>
-          </div>
-          <div class="tl-row">
-            <span class="tl-date">Jun 30, 2026</span>
-            <p><span class="t-title">Fee-schedule cutoff</span>Regional rollout date for the revised fee schedule and the start of Google's new global fee model in the US/UK/EEA; the dividing line between "new" and "existing" installs.</p>
-          </div>
-          <div class="tl-row">
-            <span class="tl-date">Jul 22, 2026</span>
-            <p><span class="t-title">Google gives notice</span>"Developers enrolled in the external content links and alternative billing programs in the US will need to report transactions and successful downloads and pay the relevant service fees starting on October 1, 2026."</p>
-          </div>
-          <div class="tl-row key">
-            <span class="tl-date">Oct 1, 2026</span>
-            <p><span class="t-title">Reporting + fees switch on</span>The program page banner, live today: developers enrolled in the program "must report transactions and successful downloads, as well as pay the relevant Play service fee, starting October 1, 2026." Before this date, US reporting was not required (the fee was effectively 0% through September 30, 2026) — but enrollment and API integration were never deferred.</p>
-          </div>
-          <div class="tl-row">
-            <span class="tl-date">Oct 21, 2026</span>
-            <p><span class="t-title">One ECL deadline moves</span>For the external content links program only, the deadline to report <em>successful downloads</em> (and pay the related fees) is extended to <strong>February 1, 2027</strong>. Transaction reporting under ECL still runs from October 1, 2026.</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="enforcement">
-        <div class="sec-num">06 — EXPOSURE</div>
-        <h2>What Google can do about the current build</h2>
-        <p class="sec-intro">
-          There is no US-program-specific penalty schedule; Google enforces through its general
-          Play enforcement process. An unenrolled Stripe-only build is a Payments-policy
-          violation on its face, so the realistic first outcomes are rejection of the build or
-          removal until a compliant version ships — with escalation for persistence.
-        </p>
-        <ol class="ladder">
-          <li>
-            <span class="l-name">Rejection</span>
-            <p>A new app or update "will not be made available on Google Play." No impact on account standing.</p>
-          </li>
-          <li>
-            <span class="l-name">Removal</span>
-            <p>The app and all previous versions "are removed from Google Play and will no longer be available for users to download," restored once you submit a policy-compliant update. Users "may not be able to make any in-app purchases… until a policy-compliant version is approved." Removals don't immediately affect account standing, "but multiple removals may result in a suspension."</p>
-          </li>
-          <li>
-            <span class="l-name">Suspension</span>
-            <p>For "egregious or multiple policy violations, as well as repeated app rejections or removals." The APK/bundle can no longer be used, and suspensions "count as strikes" — "multiple strikes can result in the termination of individual and related Google Play Developer accounts."</p>
-          </li>
-          <li>
-            <span class="l-name">Restricted account</span>
-            <p>All apps in the catalog removed; no publishing until "you have fixed all policy violations."</p>
-          </li>
-          <li>
-            <span class="l-name">Account termination</span>
-            <p>"All apps in your catalog will be removed from Google Play and you will no longer be able to publish new apps… any related Google Play developer accounts will also be permanently suspended… Any new account that you try to open will be terminated as well." Google's general rule: "Repeated or serious violations… will result in termination of individual or related Google Play Developer accounts."</p>
-          </li>
-        </ol>
-        <div class="callout">
-          <p class="c-title">No grace period covers non-enrollment</p>
-          <p>
-            The only transition relief Google documented was for <em>reporting and fees</em>
-            ("once required" → October 1, 2026) and, for external-content-links
-            <em>downloads</em> only, the February 1, 2027 deadline. Neither excuses being
-            unenrolled. No amnesty for unreported pre–October 1 transactions was found —
-            reporting simply wasn't required before that date. Enforcement actions apply in
-            all regions unless otherwise stated, and stand unless an appeal is granted.
-          </p>
-          <div class="src">Enforcement Process — <a href="https://support.google.com/googleplay/android-developer/answer/9899234">support.google.com/googleplay/android-developer/answer/9899234</a></div>
-        </div>
-      </section>
-
       <section id="paths">
-        <div class="sec-num">07 — THE FIVE SHAPES AN APP CAN TAKE</div>
+        <div class="sec-num">03 — THE FIVE SHAPES AN APP CAN TAKE</div>
         <h2>Scope distinctions that change the answer</h2>
         <p class="sec-intro">
           Your app is shape (a). Shapes (d) and (e) are the only routes that avoid Google's
@@ -777,6 +563,221 @@
         </div>
         <div class="src" style="margin-top:12px;">ECL program — <a href="https://support.google.com/googleplay/android-developer/answer/16470497">answer/16470497</a> · Payments explainer (reader apps, off-Play distribution) — <a href="https://support.google.com/googleplay/android-developer/answer/10281818?hl=en&ref_topic=12798386">answer/10281818</a></div>
       </section>
+
+      <section id="reporting">
+        <div class="sec-num">04 — THE REPORTING DUTY IN DETAIL</div>
+        <h2>How reporting actually works</h2>
+        <p class="sec-intro">
+          Reporting is a backend obligation, not an in-app one — and it's the piece most
+          unlike anything Stripe asks of you. The decisive line from Google's integration guide:
+        </p>
+        <blockquote>
+          <p>"All transactions made through an alternative billing system <strong>must be reported to Google Play by calling the Google Play Developer API from your backend within 24 hours</strong>, providing an <code>externalTransactionToken</code>… <strong>A new externalTransactionToken should be generated for each one-time purchase, each new subscription, and for any upgrade/downgrades to an existing subscription.</strong>"</p>
+          <div class="src">In-app integration guidance for alternative billing only — <a href="https://developer.android.com/google/play/billing/alternative/alternative-billing-without-user-choice-in-app?hl=en">developer.android.com/google/play/billing/alternative/…</a></div>
+        </blockquote>
+
+        <details>
+          <summary>In the app: Billing Library integration</summary>
+          <div class="d-body">
+            <ul>
+              <li>Use Play Billing Library <strong>version 6.1 or higher</strong> — the alternative billing APIs don't exist in earlier versions.</li>
+              <li>Initialize <code>BillingClient</code> with <code>enableAlternativeBillingOnly()</code>, connect to Play, and confirm availability with <code>isAlternativeBillingOnlyAvailableAsync</code>.</li>
+              <li>Before the Stripe flow, <strong>every time</strong>, show Google's information screen — it tells the user billing will not be managed by Google Play — by calling <code>showAlternativeBillingOnlyInformationDialog</code>. Proceed only on <code>BillingResponseCode.OK</code>.</li>
+              <li>Enrollment is enforced by the API itself: a <code>BILLING_UNAVAILABLE</code> response means the transaction "shouldn't proceed under this program… or your account has not been successfully enrolled in the program."</li>
+              <li>Obtain the reporting token in-app via <code>createAlternativeBillingOnlyReportingDetailsAsync</code> (returns <code>externalTransactionToken</code>) and pass it to your backend.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>From the backend: the externaltransactions API</summary>
+          <div class="d-body">
+            <p>Report through the Google Play Developer API's <code>externaltransactions</code> endpoint <strong>after a payment has been authorized</strong>. Per the backend guide, this "applies to all transactions, including initial charges, renewals, refunds, and others" — including "$0 transactions resulting from free trial purchases."</p>
+            <ul>
+              <li><strong>Initial transaction</strong> (including a subscription's first charge): the <code>externalTransactionToken</code> is required in the request body, alongside pre-tax and tax amounts, <code>transactionTime</code>, and <code>userTaxAddress.regionCode</code>. Each report also carries a developer-generated unique <code>externalTransactionId</code> as a query parameter — it must contain no personally identifiable information. For subscriptions, set <code>externalSubscription.subscriptionType</code> to <code>RECURRING</code> (auto-renewing) or <code>PREPAID</code>.</li>
+              <li><strong>Renewals:</strong> the token is <em>not</em> needed. Send a new unique <code>externalTransactionId</code> for each renewal, with the initial transaction's ID in the <code>initialExternalTransactionId</code> field.</li>
+              <li><strong>Upgrades / downgrades:</strong> reported like a new purchase on the same endpoint, sending the <code>externalTransactionToken</code> provided for that transaction.</li>
+              <li><strong>Quota:</strong> 1,200 queries per minute on the create/refund external-transaction endpoints.</li>
+              <li>Reports for ineligible countries or unenrolled accounts are rejected server-side — you cannot report your way into compliance retroactively without enrolling first.</li>
+            </ul>
+            <div class="src">Backend integration guidance — <a href="https://developer.android.com/google/play/billing/outside-gpb-backend">developer.android.com/google/play/billing/outside-gpb-backend</a></div>
+          </div>
+        </details>
+
+        <details>
+          <summary>Refunds and cancellations — the two easy ones to get wrong</summary>
+          <div class="d-body">
+            <ul>
+              <li><strong>Refunds are reportable.</strong> Use the <code>refundexternaltransaction</code> endpoint, referencing the <code>externalTransactionId</code> "of the specific recurrence of the subscription that is being refunded." Refunding an entire subscription means a separate refund request per transaction — the initial charge plus every recurrence. Full and partial refunds are supported (a partial refund requires the refunded pre-tax amount).</li>
+              <li><strong>Cancellations are not.</strong> The guide defines no cancellation-transaction report — a cancellation authorizes no payment. Cancellation matters only on re-purchase: send a new external transaction ID "if the recurring transaction is canceled or expired and the same product is bought again later."</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section id="fees">
+        <div class="sec-num">05 — THE MONEY</div>
+        <h2>The fee: 10% on subscriptions, whatever the tier</h2>
+        <p class="sec-intro">
+          The US program's fee table has a new-vs-existing-install split (cutoff: June 30, 2026)
+          and a first-$1M tier — but for auto-renewing subscriptions none of that moves the
+          number. It is 10% in every row.
+        </p>
+        <div class="table-scroll">
+          <table class="fees">
+            <thead>
+              <tr>
+                <th scope="col">Tier</th>
+                <th scope="col" class="num">Auto-renewing subscriptions</th>
+                <th scope="col" class="num">Other digital — new installs</th>
+                <th scope="col" class="num">Other digital — existing installs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>First $1M annual earnings</td>
+                <td class="num hl" data-label="Subscriptions">10%</td>
+                <td class="num" data-label="Other · new">10%</td>
+                <td class="num" data-label="Other · existing">10%</td>
+              </tr>
+              <tr>
+                <td>Standard service fee</td>
+                <td class="num hl" data-label="Subscriptions">10%</td>
+                <td class="num" data-label="Other · new">20%</td>
+                <td class="num" data-label="Other · existing">25%</td>
+              </tr>
+              <tr>
+                <td>Play Games Level Up / Apps Experience</td>
+                <td class="num hl" data-label="Subscriptions">10%</td>
+                <td class="num" data-label="Other · new">15%</td>
+                <td class="num" data-label="Other · existing">20%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note">Source: US alternative billing program page (answer/16497028), read October 26, 2026.</p>
+        <ul>
+          <li><strong>New installs:</strong> a transaction from a user whose first install or first update from Google Play occurred <strong>on or after June 30, 2026</strong>. <strong>Existing installs:</strong> before that date — June 30, 2026 is "the regional rollout date serving as the effective date." For a subscriptions-only app this distinction is academic; it bites only on non-subscription digital goods (20% vs 25% standard).</li>
+          <li>Stripe's own processing fees are separate and additional — Google's pages don't address them.</li>
+          <li><span class="flag">Context, secondary</span> Under Google's March 2026 global fee model, reporting describes the 10% as a <em>service</em> fee, with an additional 5% <em>billing</em> fee charged only when Google Play Billing is used — alternative billing avoids the billing fee but not the service fee. This split is not stated on the US program page itself.</li>
+        </ul>
+
+        <div class="callout amber">
+          <p class="c-title">The March 2026 settlement did not change any of this — and the court never approved it</p>
+          <p>
+            On March 4, 2026, Google and Epic entered a new settlement and asked the US District
+            Court to enter a revised "Modified Injunction" (RPMI) that would have <em>capped</em>
+            Google's service fees at 9% or 20% (depending on transaction type and install date)
+            through 2032. <strong>On July 15, 2026, the parties withdrew that joint motion.</strong>
+            Google's own page says only that "our current policies and programs remain in effect,"
+            and Google has confirmed it continues to comply with the original October 2024
+            permanent injunction — which remains the governing US instrument.
+          </p>
+          <p>
+            <span class="flag">Sources conflict</span> Several July 2026 headlines said the companies
+            "abandoned the settlement." MacRumors corrected its story: the <em>commercial</em>
+            settlement is intact and Google is lowering fees voluntarily, but the <em>court order</em>
+            embodying it was never entered. Any March 2026 coverage saying the settlement "was
+            approved by the court" is wrong. Either way, the RPMI would not have eliminated
+            enrollment or reporting — and Google switched both on, October 1, under its own
+            program terms after the withdrawal.
+          </p>
+          <p>
+            <span class="flag">In flux</span> Industry commentary contends the October 1 fee schedule
+            is Google's unilateral position, not court-approved, and may be challenged before
+            Judge Donato, who retains compliance oversight. No court ruling on the October 1 fees
+            was found in this research — treat the fees as payable now, but not necessarily
+            settled law.
+          </p>
+          <div class="src">Google US update page (answer/15582165); MLex, July 15, 2026; MacRumors, July 16, 2026 (updated); Engadget, July 15, 2026 — full links in Sources</div>
+        </div>
+      </section>
+
+      <section id="timeline">
+        <div class="sec-num">06 — HOW WE GOT HERE</div>
+        <h2>Timeline: what changed, and when duties switched on</h2>
+        <p class="sec-intro">
+          The key nuance: enrollment and API integration were conditions from the program's
+          launch. Only reporting and fee payment were deferred — phrased "once required" —
+          until Google's July 22, 2026 notice set the date.
+        </p>
+        <div class="timeline">
+          <div class="tl-row">
+            <span class="tl-date">Oct 29, 2025</span>
+            <p><span class="t-title">Injunction changes take effect (US)</span>For US mobile/tablet apps, Google stops requiring Google Play Billing and stops prohibiting other in-app payment methods and external links.</p>
+          </div>
+          <div class="tl-row">
+            <span class="tl-date">Dec 9, 2025</span>
+            <p><span class="t-title">The formal programs launch</span>Clarified Payments policy, the US alternative billing program "for all eligible developers serving US users," and the external content links program. Alternative billing is available "by complying with" these policies and programs — enrollment is a condition from this point.</p>
+          </div>
+          <div class="tl-row">
+            <span class="tl-date">Jan 28, 2026</span>
+            <p><span class="t-title">The December changes come into force</span><span class="flag">Secondary only</span>Secondary reporting consistently states the Dec 9 changes came into force on this date, ending the post-injunction transition for enrollment. No current Google primary page located in this research states January 28 explicitly — don't cite it as a Google-quoted deadline.</p>
+          </div>
+          <div class="tl-row">
+            <span class="tl-date">Jun 30, 2026</span>
+            <p><span class="t-title">Fee-schedule cutoff</span>Regional rollout date for the revised fee schedule and the start of Google's new global fee model in the US/UK/EEA; the dividing line between "new" and "existing" installs.</p>
+          </div>
+          <div class="tl-row">
+            <span class="tl-date">Jul 22, 2026</span>
+            <p><span class="t-title">Google gives notice</span>"Developers enrolled in the external content links and alternative billing programs in the US will need to report transactions and successful downloads and pay the relevant service fees starting on October 1, 2026."</p>
+          </div>
+          <div class="tl-row key">
+            <span class="tl-date">Oct 1, 2026</span>
+            <p><span class="t-title">Reporting + fees switch on</span>The program page banner, live today: developers enrolled in the program "must report transactions and successful downloads, as well as pay the relevant Play service fee, starting October 1, 2026." Before this date, US reporting was not required (the fee was effectively 0% through September 30, 2026) — but enrollment and API integration were never deferred.</p>
+          </div>
+          <div class="tl-row">
+            <span class="tl-date">Oct 21, 2026</span>
+            <p><span class="t-title">One ECL deadline moves</span>For the external content links program only, the deadline to report <em>successful downloads</em> (and pay the related fees) is extended to <strong>February 1, 2027</strong>. Transaction reporting under ECL still runs from October 1, 2026.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="enforcement">
+        <div class="sec-num">07 — EXPOSURE</div>
+        <h2>What Google can do about the current build</h2>
+        <p class="sec-intro">
+          There is no US-program-specific penalty schedule; Google enforces through its general
+          Play enforcement process. An unenrolled Stripe-only build is a Payments-policy
+          violation on its face, so the realistic first outcomes are rejection of the build or
+          removal until a compliant version ships — with escalation for persistence.
+        </p>
+        <ol class="ladder">
+          <li>
+            <span class="l-name">Rejection</span>
+            <p>A new app or update "will not be made available on Google Play." No impact on account standing.</p>
+          </li>
+          <li>
+            <span class="l-name">Removal</span>
+            <p>The app and all previous versions "are removed from Google Play and will no longer be available for users to download," restored once you submit a policy-compliant update. Users "may not be able to make any in-app purchases… until a policy-compliant version is approved." Removals don't immediately affect account standing, "but multiple removals may result in a suspension."</p>
+          </li>
+          <li>
+            <span class="l-name">Suspension</span>
+            <p>For "egregious or multiple policy violations, as well as repeated app rejections or removals." The APK/bundle can no longer be used, and suspensions "count as strikes" — "multiple strikes can result in the termination of individual and related Google Play Developer accounts."</p>
+          </li>
+          <li>
+            <span class="l-name">Restricted account</span>
+            <p>All apps in the catalog removed; no publishing until "you have fixed all policy violations."</p>
+          </li>
+          <li>
+            <span class="l-name">Account termination</span>
+            <p>"All apps in your catalog will be removed from Google Play and you will no longer be able to publish new apps… any related Google Play developer accounts will also be permanently suspended… Any new account that you try to open will be terminated as well." Google's general rule: "Repeated or serious violations… will result in termination of individual or related Google Play Developer accounts."</p>
+          </li>
+        </ol>
+        <div class="callout">
+          <p class="c-title">No grace period covers non-enrollment</p>
+          <p>
+            The only transition relief Google documented was for <em>reporting and fees</em>
+            ("once required" → October 1, 2026) and, for external-content-links
+            <em>downloads</em> only, the February 1, 2027 deadline. Neither excuses being
+            unenrolled. No amnesty for unreported pre–October 1 transactions was found —
+            reporting simply wasn't required before that date. Enforcement actions apply in
+            all regions unless otherwise stated, and stand unless an appeal is granted.
+          </p>
+          <div class="src">Enforcement Process — <a href="https://support.google.com/googleplay/android-developer/answer/9899234">support.google.com/googleplay/android-developer/answer/9899234</a></div>
+        </div>
+      </section>
+
 
       <section id="user-choice">
         <div class="sec-num">08 — ADDING GOOGLE PLAY BILLING ALONGSIDE STRIPE</div>
