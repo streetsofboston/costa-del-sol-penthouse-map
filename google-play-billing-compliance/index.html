@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="en">
+  <head>
+<meta name="robots" content="noindex, nofollow">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Google Play Alternative Billing — Compliance Assessment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f6f6f3;
+        --surface: #ffffff;
+        --surface-2: #efefea;
+        --ink: #191c20;
+        --ink-2: #454b53;
+        --ink-3: #6b7178;
+        --line: #d9d9d2;
+        --red: #a92c22;
+        --red-bg: #fbeae7;
+        --red-line: #e3b3ac;
+        --green: #17663f;
+        --green-bg: #e6f2ea;
+        --green-line: #a9cbb6;
+        --amber: #8a5a08;
+        --amber-bg: #faf0d7;
+        --amber-line: #ddc384;
+        --accent: #1f4e79;
+        --code-bg: #eceee9;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #14161a;
+          --surface: #1d2025;
+          --surface-2: #23262c;
+          --ink: #eceef0;
+          --ink-2: #b9bec5;
+          --ink-3: #8d939c;
+          --line: #34383f;
+          --red: #f0958a;
+          --red-bg: #3a211e;
+          --red-line: #6e3a33;
+          --green: #7cc79b;
+          --green-bg: #1d2f26;
+          --green-line: #39584a;
+          --amber: #e3bd72;
+          --amber-bg: #332a17;
+          --amber-line: #63552e;
+          --accent: #8fb8dd;
+          --code-bg: #282b31;
+        }
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Public Sans", system-ui, sans-serif;
+        font-size: 16.5px;
+        line-height: 1.62;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 820px; margin: 0 auto; padding: 0 22px 90px; }
+      h1, h2, h3 { font-family: "Newsreader", Georgia, serif; line-height: 1.18; }
+      h1 { font-size: clamp(30px, 5.4vw, 44px); font-weight: 700; margin: 0 0 14px; letter-spacing: -0.01em; }
+      h2 { font-size: clamp(23px, 3.6vw, 29px); font-weight: 600; margin: 0 0 6px; }
+      h3 { font-size: 19px; font-weight: 600; margin: 26px 0 6px; }
+      p { margin: 0 0 14px; }
+      a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+      a:hover { text-decoration-thickness: 2px; }
+      .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.86em; }
+      code {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 0.85em;
+        background: var(--code-bg);
+        padding: 1px 5px;
+        border-radius: 4px;
+        overflow-wrap: anywhere;
+      }
+
+      /* ---------- Header ---------- */
+      header { padding: 52px 0 8px; }
+      .kicker {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        margin-bottom: 16px;
+      }
+      .lede { font-size: 18.5px; color: var(--ink-2); max-width: 68ch; }
+      .meta-line {
+        margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line);
+        font-size: 13.5px; color: var(--ink-3);
+        display: flex; flex-wrap: wrap; gap: 6px 22px;
+      }
+
+      /* ---------- Verdict ---------- */
+      .verdict {
+        margin-top: 30px;
+        background: var(--red-bg);
+        border: 1px solid var(--red-line);
+        border-radius: 10px;
+        padding: 26px 28px 22px;
+      }
+      .verdict .v-label {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12.5px; letter-spacing: 0.14em; text-transform: uppercase;
+        color: var(--red); margin-bottom: 8px;
+      }
+      .verdict h2 { font-size: clamp(26px, 4.4vw, 34px); margin-bottom: 10px; }
+      .verdict p { max-width: 66ch; }
+      .verdict p:last-child { margin-bottom: 4px; }
+
+      /* ---------- Scorecard ---------- */
+      .scorecard { margin-top: 22px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+      .scorecard .sc-head {
+        padding: 16px 22px 4px;
+        font-family: "IBM Plex Mono", monospace; font-size: 12.5px;
+        letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);
+      }
+      .sc-row {
+        display: grid; grid-template-columns: 1fr auto; gap: 4px 18px;
+        padding: 14px 22px; border-top: 1px solid var(--line);
+        align-items: baseline;
+      }
+      .sc-row:first-of-type { border-top: none; }
+      .sc-name { font-weight: 600; }
+      .sc-detail { grid-column: 1 / -1; color: var(--ink-2); font-size: 15px; }
+      .chip {
+        font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 500;
+        letter-spacing: 0.06em; text-transform: uppercase;
+        padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+      }
+      .chip.fail { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-line); }
+      .chip.ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-line); }
+      .chip.warn { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-line); }
+      .chip.neutral { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); }
+
+      /* ---------- Sections ---------- */
+      section { margin-top: 56px; }
+      .sec-num {
+        font-family: "IBM Plex Mono", monospace; font-size: 13px;
+        color: var(--ink-3); letter-spacing: 0.1em; margin-bottom: 6px;
+      }
+      .sec-intro { color: var(--ink-2); max-width: 68ch; }
+      blockquote {
+        margin: 18px 0; padding: 16px 20px;
+        background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+        font-size: 16px;
+      }
+      blockquote p { margin: 0 0 8px; }
+      blockquote p:last-of-type { margin-bottom: 10px; }
+      .src {
+        font-size: 13px; color: var(--ink-3);
+        font-family: "IBM Plex Mono", monospace;
+        overflow-wrap: anywhere;
+      }
+      blockquote a, .callout a, .d-body a { overflow-wrap: anywhere; }
+      .src a { color: var(--ink-3); }
+      .callout {
+        border-radius: 8px; padding: 16px 20px; margin: 18px 0;
+        border: 1px solid var(--line); background: var(--surface);
+      }
+      .callout.amber { background: var(--amber-bg); border-color: var(--amber-line); }
+      .callout.green { background: var(--green-bg); border-color: var(--green-line); }
+      .callout p:last-child { margin-bottom: 0; }
+      .callout .c-title { font-weight: 700; margin-bottom: 6px; }
+      ul, ol { margin: 8px 0 16px; padding-left: 24px; }
+      li { margin-bottom: 7px; }
+      li::marker { color: var(--ink-3); }
+      .flag {
+        display: inline-block; vertical-align: 2px;
+        font-family: "IBM Plex Mono", monospace; font-size: 11px;
+        letter-spacing: 0.05em; text-transform: uppercase;
+        color: var(--amber); background: var(--amber-bg);
+        border: 1px solid var(--amber-line); border-radius: 4px;
+        padding: 0 6px; margin-right: 6px;
+      }
+
+      /* ---------- Steps ---------- */
+      ol.steps { list-style: none; padding: 0; counter-reset: step; margin-top: 14px; }
+      ol.steps > li {
+        counter-increment: step;
+        display: grid; grid-template-columns: 38px 1fr; gap: 14px;
+        padding: 14px 0; border-top: 1px solid var(--line); margin: 0;
+      }
+      ol.steps > li::before {
+        content: counter(step);
+        font-family: "Newsreader", serif; font-size: 24px; font-weight: 600;
+        color: var(--ink-3); line-height: 1.2;
+      }
+      ol.steps .s-title { font-weight: 600; display: block; margin-bottom: 2px; }
+      ol.steps p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
+
+      /* ---------- Accordions ---------- */
+      details {
+        border: 1px solid var(--line); border-radius: 8px;
+        background: var(--surface); margin: 10px 0; overflow: hidden;
+      }
+      details summary {
+        cursor: pointer; padding: 14px 20px; font-weight: 600;
+        list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      }
+      details summary::-webkit-details-marker { display: none; }
+      details summary::after {
+        content: "+"; font-family: "IBM Plex Mono", monospace;
+        font-size: 20px; color: var(--ink-3); flex: none;
+      }
+      details[open ] summary::after { content: "–"; }
+      details .d-body { padding: 0 20px 16px; color: var(--ink-2); font-size: 15.5px; }
+      details .d-body p:last-child, details .d-body ul:last-child { margin-bottom: 2px; }
+
+      /* ---------- Tables ---------- */
+      .table-scroll { margin: 18px 0 8px; }
+      table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; font-size: 15px; }
+      th, td { padding: 11px 14px; text-align: left; border-top: 1px solid var(--line); vertical-align: top; }
+      thead th { border-top: none; background: var(--surface-2); font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); }
+      td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+      td.hl { font-weight: 700; color: var(--red); }
+      @media (prefers-color-scheme: dark) { td.hl { color: var(--red); } }
+      .table-note { font-size: 13.5px; color: var(--ink-3); margin-top: 8px; }
+
+      /* ---------- Timeline ---------- */
+      .timeline { margin-top: 16px; border-top: 1px solid var(--line); }
+      .tl-row {
+        display: grid; grid-template-columns: 138px 1fr; gap: 18px;
+        padding: 15px 0; border-bottom: 1px solid var(--line);
+      }
+      .tl-date { font-family: "IBM Plex Mono", monospace; font-size: 13.5px; color: var(--ink-2); padding-top: 3px; white-space: nowrap; }
+      .tl-row.key { background: var(--red-bg); margin: 0 -14px; padding-left: 14px; padding-right: 14px; border-radius: 6px; border-bottom-color: transparent; }
+      .tl-row p { margin: 0; font-size: 15.5px; }
+      .tl-row .t-title { font-weight: 600; display: block; margin-bottom: 2px; font-size: 16px; }
+
+      /* ---------- Ladder ---------- */
+      ol.ladder { list-style: none; padding: 0; margin-top: 14px; }
+      ol.ladder > li {
+        display: grid; grid-template-columns: 150px 1fr; gap: 16px;
+        padding: 13px 0; border-top: 1px solid var(--line); margin: 0;
+      }
+      ol.ladder .l-name { font-weight: 700; }
+      ol.ladder p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
+
+      /* ---------- Path cards ---------- */
+      .paths { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
+      .path {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: 10px; padding: 20px 22px;
+      }
+      .path .p-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+      .path h3 { margin: 0; font-size: 18.5px; }
+      .path p { font-size: 15px; color: var(--ink-2); }
+      .path p:last-child { margin-bottom: 0; }
+      .path.you { border-color: var(--red-line); background: var(--red-bg); }
+      .path.you p { color: var(--ink); }
+
+      /* ---------- Sources ---------- */
+      .sources { font-size: 14px; }
+      .sources li { margin-bottom: 9px; overflow-wrap: anywhere; }
+      .sources .s-name { font-weight: 600; color: var(--ink); }
+      footer {
+        margin-top: 70px; padding-top: 18px; border-top: 1px solid var(--line);
+        font-size: 13.5px; color: var(--ink-3);
+      }
+
+      /* ---------- Mobile ---------- */
+      @media (max-width: 640px) {
+        body { font-size: 16px; }
+        .wrap { padding: 0 18px 70px; }
+        header { padding-top: 38px; }
+        .verdict { padding: 22px 20px 18px; }
+        .sc-row { grid-template-columns: 1fr; }
+        .sc-row .chip { justify-self: start; }
+        .paths { grid-template-columns: 1fr; }
+        .tl-row { grid-template-columns: 1fr; gap: 2px; }
+        .tl-row.key { margin: 0; padding-left: 10px; padding-right: 10px; }
+        ol.ladder > li { grid-template-columns: 1fr; gap: 2px; }
+        table.fees thead { display: none; }
+        table.fees, table.fees tbody, table.fees tr, table.fees td { display: block; width: 100%; }
+        table.fees tr { border-top: 1px solid var(--line); padding: 8px 0; }
+        table.fees tr:first-child { border-top: none; }
+        table.fees td { border-top: none; padding: 5px 14px; display: flex; justify-content: space-between; gap: 16px; }
+        table.fees td::before { content: attr(data-label); color: var(--ink-3); font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
+        table.fees td:first-child { font-weight: 700; justify-content: flex-start; }
+        table.fees td:first-child::before { content: none; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+
+      <header>
+        <div class="kicker">Compliance assessment · Google Play Payments policy</div>
+        <h1>Stripe-only in your Android app: not compliant as it stands</h1>
+        <p class="lede">
+          Your setup — subscriptions sold to US users, paid only through Stripe inside a
+          Google Play–distributed app, with no enrollment in any Google program and nothing
+          reported to Google — violates Google Play's current Payments policy. US developers
+          <em>may</em> use Stripe in-app, but only inside Google's alternative billing program:
+          enrollment, the alternative billing APIs, transaction reporting within 24 hours
+          (required since October 1, 2026), and a 10% service fee on auto-renewing subscriptions.
+        </p>
+        <div class="meta-line">
+          <span>Assessed October 26, 2026</span>
+          <span>Scope: Google Play distribution · US users · auto-renewing subscriptions</span>
+          <span>Based on Google's own policy pages and developer guides, read in full</span>
+        </div>
+      </header>
+
+      <div class="verdict">
+        <div class="v-label">Verdict</div>
+        <h2>Not compliant — on two independent grounds</h2>
+        <p>
+          The arrangement fails the Payments policy twice over. It does not use Google Play's
+          billing system, which §2 requires by default — and it does not qualify for the §8
+          alternative-billing exception either, because that exception is expressly conditioned
+          on enrolling in Google's program and accepting its terms. Since October 1, 2026 it
+          also breaches the program's reporting duty and fee obligation, which now apply to
+          every authorized US transaction.
+        </p>
+        <p>
+          Nothing about this requires abandoning Stripe. The fix is to bring the existing
+          Stripe flow inside the program — enroll, integrate the APIs, report, and pay the
+          fee — or to restructure into one of the compliant shapes set out in
+          <a href="#paths">§7</a>.
+        </p>
+      </div>
+
+      <div class="scorecard" aria-label="Your current setup against the four compliance gates">
+        <div class="sc-head">Your current setup, gate by gate</div>
+        <div class="sc-row">
+          <span class="sc-name">1 · Program enrollment</span>
+          <span class="chip fail">Not met</span>
+          <span class="sc-detail">§8 makes enrollment a condition of offering any in-app alternative billing. You are not enrolled in the US alternative billing program.</span>
+        </div>
+        <div class="sc-row">
+          <span class="sc-name">2 · Alternative billing API integration</span>
+          <span class="chip fail">Not met</span>
+          <span class="sc-detail">No Play Billing Library alternative-billing integration, no Google information dialog before the Stripe flow. Google enforces this technically: an unenrolled account gets <code>BILLING_UNAVAILABLE</code>.</span>
+        </div>
+        <div class="sc-row">
+          <span class="sc-name">3 · Transaction reporting within 24 hours</span>
+          <span class="chip fail">Not met</span>
+          <span class="sc-detail">Required for enrolled US developers since October 1, 2026 — every authorized transaction: sign-ups, renewals, upgrades, downgrades, refunds, even $0 free-trial starts. You report nothing.</span>
+        </div>
+        <div class="sc-row">
+          <span class="sc-name">4 · Service fee — 10% of subscription revenue</span>
+          <span class="chip fail">Not met</span>
+          <span class="sc-detail">Auto-renewing subscriptions carry a 10% Play service fee under the program, payable since October 1, 2026, on top of Stripe's own processing fees.</span>
+        </div>
+      </div>
+
+      <section id="why">
+        <div class="sec-num">01 — THE REASONING</div>
+        <h2>Why "the program is opt-in" doesn't cover you</h2>
+        <p class="sec-intro">
+          The two pages you linked seem to point in opposite directions: the October 2025 US
+          update says Google no longer requires its own billing, and the program page calls
+          enrollment "opt-in." Read together with the Payments policy itself, they don't.
+          The injunction removed the <em>mandate to use Google Play Billing</em>; it did not
+          remove the <em>conditions on using something else</em>.
+        </p>
+
+        <h3>The default rule (§2) and the steering ban (§4)</h3>
+        <blockquote>
+          <p>"Play-distributed apps requiring or accepting payment for access to in-app features or services, including any app functionality, digital content or goods (collectively 'in-app purchases'), <strong>must use Google Play's billing system for those transactions unless Section 3, 8 or 9 applies</strong>."</p>
+          <p>"Other than the conditions described in Section 3, Section 8 and Section 9, apps may not lead users to a payment method other than Google Play's billing system."</p>
+          <div class="src">Payments policy §§2, 4 — <a href="https://support.google.com/googleplay/android-developer/answer/9858738?hl=en-GB">support.google.com/googleplay/android-developer/answer/9858738</a></div>
+        </blockquote>
+        <p>Subscription services are expressly listed among the in-app purchases §2 covers. A Stripe-only app does not use Google Play's billing system, so it survives only if an exception applies.</p>
+
+        <h3>The only in-app exception (§8) is conditioned on enrollment</h3>
+        <blockquote>
+          <p>"Developers serving users in eligible countries/regions <strong>may offer users an alternative billing system within the app if they enrol in the applicable programme and agree to the additional terms and programme requirements</strong>."</p>
+          <div class="src">Payments policy §8 — same page</div>
+        </blockquote>
+        <blockquote>
+          <p>"Developers participating in this program must comply with the following requirements: — <strong>Only offer alternative billing systems within the app by implementing and enrolling in this program</strong>"</p>
+          <div class="src">Offering an alternative billing system for users in the United States — <a href="https://support.google.com/googleplay/android-developer/answer/16497028?hl=en">support.google.com/googleplay/android-developer/answer/16497028</a></div>
+        </blockquote>
+
+        <h3>What "opt-in" actually means</h3>
+        <blockquote>
+          <p>"No, this is an opt-in program. <strong>If you do not wish to offer US users an alternative to Google Play's billing system, no action is required.</strong>"</p>
+          <div class="src">Program FAQ — same program page</div>
+        </blockquote>
+        <p>
+          The choice Google offers is binary: use Google Play Billing exclusively (no action
+          needed), <em>or</em> offer an alternative such as Stripe — in which case enrollment,
+          API integration, reporting, and the fee all attach. There is no third state of
+          "alternative billing without the program." Your app currently sits in exactly that
+          non-existent third state, so it satisfies neither §2 nor §8.
+        </p>
+        <p>
+          The US update page says the same thing in its own words. It confirms Google "will
+          not require the use of Google Play Billing in apps distributed on the Google Play
+          Store, or prohibit the use of in-app payment methods other than Google Play Billing" —
+          and immediately conditions the practical route: developers may offer alternative
+          billing "<strong>by complying with</strong> the following policies and programs (as
+          launched on December 9, 2025)."
+        </p>
+        <div class="src">US injunction policy update — <a href="https://support.google.com/googleplay/android-developer/answer/15582165">support.google.com/googleplay/android-developer/answer/15582165</a></div>
+      </section>
+
+      <section id="fix">
+        <div class="sec-num">02 — THE FIX</div>
+        <h2>What compliance requires, keeping Stripe</h2>
+        <p class="sec-intro">
+          The program page frames these as mandatory steps for anyone who wants to offer
+          alternative billing ("If you would like to offer alternative billing, you must
+          complete the following steps").
+        </p>
+        <ol class="steps">
+          <li>
+            <div>
+              <span class="s-title">Review the program requirements</span>
+              <p>Eligibility: an app or game on mobile or tablet form factors offering alternative billing to users in the US and its territories.</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <span class="s-title">Enroll in Play Console</span>
+              <p>Settings → Alternative billing: complete the onboarding steps and enroll in the US alternative billing program, accepting the additional program terms.</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <span class="s-title">Integrate the alternative billing APIs</span>
+              <p>Per the API integration guide — Play Billing Library 6.1+, the "alternative billing only" flow, and Google's information dialog before every Stripe checkout (details in §3).</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <span class="s-title">Configure each app in Play Console</span>
+              <p>Opt each app in or out of the program and provide subscription management URLs.</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <span class="s-title">Report every transaction, and pay the fee</span>
+              <p>Since October 1, 2026: report all authorized US transactions within 24 hours via the alternative billing APIs, and pay the applicable service fee — 10% for your subscriptions.</p>
+            </div>
+          </li>
+        </ol>
+        <h3>Ongoing program duties</h3>
+        <ul>
+          <li>PCI-DSS compliance if you handle card data directly (with Stripe's hosted elements this burden is largely Stripe's, but the program requirement is stated unconditionally).</li>
+          <li>Comply with applicable payments and minors laws.</li>
+          <li>Provide customer support and a dispute process for unauthorized transactions.</li>
+          <li>Provide links for order history, subscription management, and refund requests.</li>
+          <li>If Google Play Billing is also offered, all users must be able to access it consistently and reliably.</li>
+        </ul>
+        <div class="src">Program page, requirements and enrollment steps — <a href="https://support.google.com/googleplay/android-developer/answer/16497028?hl=en">answer/16497028</a></div>
+      </section>
+
+      <section id="reporting">
+        <div class="sec-num">03 — THE REPORTING DUTY IN DETAIL</div>
+        <h2>How reporting actually works</h2>
+        <p class="sec-intro">
+          Reporting is a backend obligation, not an in-app one — and it's the piece most
+          unlike anything Stripe asks of you. The decisive line from Google's integration guide:
+        </p>
+        <blockquote>
+          <p>"All transactions made through an alternative billing system <strong>must be reported to Google Play by calling the Google Play Developer API from your backend within 24 hours</strong>, providing an <code>externalTransactionToken</code>… <strong>A new externalTransactionToken should be generated for each one-time purchase, each new subscription, and for any upgrade/downgrades to an existing subscription.</strong>"</p>
+          <div class="src">In-app integration guidance for alternative billing only — <a href="https://developer.android.com/google/play/billing/alternative/alternative-billing-without-user-choice-in-app?hl=en">developer.android.com/google/play/billing/alternative/…</a></div>
+        </blockquote>
+
+        <details>
+          <summary>In the app: Billing Library integration</summary>
+          <div class="d-body">
+            <ul>
+              <li>Use Play Billing Library <strong>version 6.1 or higher</strong> — the alternative billing APIs don't exist in earlier versions.</li>
+              <li>Initialize <code>BillingClient</code> with <code>enableAlternativeBillingOnly()</code>, connect to Play, and confirm availability with <code>isAlternativeBillingOnlyAvailableAsync</code>.</li>
+              <li>Before the Stripe flow, <strong>every time</strong>, show Google's information screen — it tells the user billing will not be managed by Google Play — by calling <code>showAlternativeBillingOnlyInformationDialog</code>. Proceed only on <code>BillingResponseCode.OK</code>.</li>
+              <li>Enrollment is enforced by the API itself: a <code>BILLING_UNAVAILABLE</code> response means the transaction "shouldn't proceed under this program… or your account has not been successfully enrolled in the program."</li>
+              <li>Obtain the reporting token in-app via <code>createAlternativeBillingOnlyReportingDetailsAsync</code> (returns <code>externalTransactionToken</code>) and pass it to your backend.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>From the backend: the externaltransactions API</summary>
+          <div class="d-body">
+            <p>Report through the Google Play Developer API's <code>externaltransactions</code> endpoint <strong>after a payment has been authorized</strong>. Per the backend guide, this "applies to all transactions, including initial charges, renewals, refunds, and others" — including "$0 transactions resulting from free trial purchases."</p>
+            <ul>
+              <li><strong>Initial transaction</strong> (including a subscription's first charge): the <code>externalTransactionToken</code> is required in the request body, alongside pre-tax and tax amounts, <code>transactionTime</code>, and <code>userTaxAddress.regionCode</code>. Each report also carries a developer-generated unique <code>externalTransactionId</code> as a query parameter — it must contain no personally identifiable information. For subscriptions, set <code>externalSubscription.subscriptionType</code> to <code>RECURRING</code> (auto-renewing) or <code>PREPAID</code>.</li>
+              <li><strong>Renewals:</strong> the token is <em>not</em> needed. Send a new unique <code>externalTransactionId</code> for each renewal, with the initial transaction's ID in the <code>initialExternalTransactionId</code> field.</li>
+              <li><strong>Upgrades / downgrades:</strong> reported like a new purchase on the same endpoint, sending the <code>externalTransactionToken</code> provided for that transaction.</li>
+              <li><strong>Quota:</strong> 1,200 queries per minute on the create/refund external-transaction endpoints.</li>
+              <li>Reports for ineligible countries or unenrolled accounts are rejected server-side — you cannot report your way into compliance retroactively without enrolling first.</li>
+            </ul>
+            <div class="src">Backend integration guidance — <a href="https://developer.android.com/google/play/billing/outside-gpb-backend">developer.android.com/google/play/billing/outside-gpb-backend</a></div>
+          </div>
+        </details>
+
+        <details>
+          <summary>Refunds and cancellations — the two easy ones to get wrong</summary>
+          <div class="d-body">
+            <ul>
+              <li><strong>Refunds are reportable.</strong> Use the <code>refundexternaltransaction</code> endpoint, referencing the <code>externalTransactionId</code> "of the specific recurrence of the subscription that is being refunded." Refunding an entire subscription means a separate refund request per transaction — the initial charge plus every recurrence. Full and partial refunds are supported (a partial refund requires the refunded pre-tax amount).</li>
+              <li><strong>Cancellations are not.</strong> The guide defines no cancellation-transaction report — a cancellation authorizes no payment. Cancellation matters only on re-purchase: send a new external transaction ID "if the recurring transaction is canceled or expired and the same product is bought again later."</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section id="fees">
+        <div class="sec-num">04 — THE MONEY</div>
+        <h2>The fee: 10% on subscriptions, whatever the tier</h2>
+        <p class="sec-intro">
+          The US program's fee table has a new-vs-existing-install split (cutoff: June 30, 2026)
+          and a first-$1M tier — but for auto-renewing subscriptions none of that moves the
+          number. It is 10% in every row.
+        </p>
+        <div class="table-scroll">
+          <table class="fees">
+            <thead>
+              <tr>
+                <th scope="col">Tier</th>
+                <th scope="col" class="num">Auto-renewing subscriptions</th>
+                <th scope="col" class="num">Other digital — new installs</th>
+                <th scope="col" class="num">Other digital — existing installs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>First $1M annual earnings</td>
+                <td class="num hl" data-label="Subscriptions">10%</td>
+                <td class="num" data-label="Other · new">10%</td>
+                <td class="num" data-label="Other · existing">10%</td>
+              </tr>
+              <tr>
+                <td>Standard service fee</td>
+                <td class="num hl" data-label="Subscriptions">10%</td>
+                <td class="num" data-label="Other · new">20%</td>
+                <td class="num" data-label="Other · existing">25%</td>
+              </tr>
+              <tr>
+                <td>Play Games Level Up / Apps Experience</td>
+                <td class="num hl" data-label="Subscriptions">10%</td>
+                <td class="num" data-label="Other · new">15%</td>
+                <td class="num" data-label="Other · existing">20%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note">Source: US alternative billing program page (answer/16497028), read October 26, 2026.</p>
+        <ul>
+          <li><strong>New installs:</strong> a transaction from a user whose first install or first update from Google Play occurred <strong>on or after June 30, 2026</strong>. <strong>Existing installs:</strong> before that date — June 30, 2026 is "the regional rollout date serving as the effective date." For a subscriptions-only app this distinction is academic; it bites only on non-subscription digital goods (20% vs 25% standard).</li>
+          <li>Stripe's own processing fees are separate and additional — Google's pages don't address them.</li>
+          <li><span class="flag">Context, secondary</span> Under Google's March 2026 global fee model, reporting describes the 10% as a <em>service</em> fee, with an additional 5% <em>billing</em> fee charged only when Google Play Billing is used — alternative billing avoids the billing fee but not the service fee. This split is not stated on the US program page itself.</li>
+        </ul>
+
+        <div class="callout amber">
+          <p class="c-title">The March 2026 settlement did not change any of this — and the court never approved it</p>
+          <p>
+            On March 4, 2026, Google and Epic entered a new settlement and asked the US District
+            Court to enter a revised "Modified Injunction" (RPMI) that would have <em>capped</em>
+            Google's service fees at 9% or 20% (depending on transaction type and install date)
+            through 2032. <strong>On July 15, 2026, the parties withdrew that joint motion.</strong>
+            Google's own page says only that "our current policies and programs remain in effect,"
+            and Google has confirmed it continues to comply with the original October 2024
+            permanent injunction — which remains the governing US instrument.
+          </p>
+          <p>
+            <span class="flag">Sources conflict</span> Several July 2026 headlines said the companies
+            "abandoned the settlement." MacRumors corrected its story: the <em>commercial</em>
+            settlement is intact and Google is lowering fees voluntarily, but the <em>court order</em>
+            embodying it was never entered. Any March 2026 coverage saying the settlement "was
+            approved by the court" is wrong. Either way, the RPMI would not have eliminated
+            enrollment or reporting — and Google switched both on, October 1, under its own
+            program terms after the withdrawal.
+          </p>
+          <p>
+            <span class="flag">In flux</span> Industry commentary contends the October 1 fee schedule
+            is Google's unilateral position, not court-approved, and may be challenged before
+            Judge Donato, who retains compliance oversight. No court ruling on the October 1 fees
+            was found in this research — treat the fees as payable now, but not necessarily
+            settled law.
+          </p>
+          <div class="src">Google US update page (answer/15582165); MLex, July 15, 2026; MacRumors, July 16, 2026 (updated); Engadget, July 15, 2026 — full links in Sources</div>
+        </div>
+      </section>
+
+      <section id="timeline">
+        <div class="sec-num">05 — HOW WE GOT HERE</div>
+        <h2>Timeline: what changed, and when duties switched on</h2>
+        <p class="sec-intro">
+          The key nuance: enrollment and API integration were conditions from the program's
+          launch. Only reporting and fee payment were deferred — phrased "once required" —
+          until Google's July 22, 2026 notice set the date.
+        </p>
+        <div class="timeline">
+          <div class="tl-row">
+            <span class="tl-date">Oct 29, 2025</span>
+            <p><span class="t-title">Injunction changes take effect (US)</span>For US mobile/tablet apps, Google stops requiring Google Play Billing and stops prohibiting other in-app payment methods and external links.</p>
+          </div>
+          <div class="tl-row">
+            <span class="tl-date">Dec 9, 2025</span>
+            <p><span class="t-title">The formal programs launch</span>Clarified Payments policy, the US alternative billing program "for all eligible developers serving US users," and the external content links program. Alternative billing is available "by complying with" these policies and programs — enrollment is a condition from this point.</p>
+          </div>
+          <div class="tl-row">
+            <span class="tl-date">Jan 28, 2026</span>
+            <p><span class="t-title">The December changes come into force</span><span class="flag">Secondary only</span>Secondary reporting consistently states the Dec 9 changes came into force on this date, ending the post-injunction transition for enrollment. No current Google primary page located in this research states January 28 explicitly — don't cite it as a Google-quoted deadline.</p>
+          </div>
+          <div class="tl-row">
+            <span class="tl-date">Jun 30, 2026</span>
+            <p><span class="t-title">Fee-schedule cutoff</span>Regional rollout date for the revised fee schedule and the start of Google's new global fee model in the US/UK/EEA; the dividing line between "new" and "existing" installs.</p>
+          </div>
+          <div class="tl-row">
+            <span class="tl-date">Jul 22, 2026</span>
+            <p><span class="t-title">Google gives notice</span>"Developers enrolled in the external content links and alternative billing programs in the US will need to report transactions and successful downloads and pay the relevant service fees starting on October 1, 2026."</p>
+          </div>
+          <div class="tl-row key">
+            <span class="tl-date">Oct 1, 2026</span>
+            <p><span class="t-title">Reporting + fees switch on</span>The program page banner, live today: developers enrolled in the program "must report transactions and successful downloads, as well as pay the relevant Play service fee, starting October 1, 2026." Before this date, US reporting was not required (the fee was effectively 0% through September 30, 2026) — but enrollment and API integration were never deferred.</p>
+          </div>
+          <div class="tl-row">
+            <span class="tl-date">Oct 21, 2026</span>
+            <p><span class="t-title">One ECL deadline moves</span>For the external content links program only, the deadline to report <em>successful downloads</em> (and pay the related fees) is extended to <strong>February 1, 2027</strong>. Transaction reporting under ECL still runs from October 1, 2026.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="enforcement">
+        <div class="sec-num">06 — EXPOSURE</div>
+        <h2>What Google can do about the current build</h2>
+        <p class="sec-intro">
+          There is no US-program-specific penalty schedule; Google enforces through its general
+          Play enforcement process. An unenrolled Stripe-only build is a Payments-policy
+          violation on its face, so the realistic first outcomes are rejection of the build or
+          removal until a compliant version ships — with escalation for persistence.
+        </p>
+        <ol class="ladder">
+          <li>
+            <span class="l-name">Rejection</span>
+            <p>A new app or update "will not be made available on Google Play." No impact on account standing.</p>
+          </li>
+          <li>
+            <span class="l-name">Removal</span>
+            <p>The app and all previous versions "are removed from Google Play and will no longer be available for users to download," restored once you submit a policy-compliant update. Users "may not be able to make any in-app purchases… until a policy-compliant version is approved." Removals don't immediately affect account standing, "but multiple removals may result in a suspension."</p>
+          </li>
+          <li>
+            <span class="l-name">Suspension</span>
+            <p>For "egregious or multiple policy violations, as well as repeated app rejections or removals." The APK/bundle can no longer be used, and suspensions "count as strikes" — "multiple strikes can result in the termination of individual and related Google Play Developer accounts."</p>
+          </li>
+          <li>
+            <span class="l-name">Restricted account</span>
+            <p>All apps in the catalog removed; no publishing until "you have fixed all policy violations."</p>
+          </li>
+          <li>
+            <span class="l-name">Account termination</span>
+            <p>"All apps in your catalog will be removed from Google Play and you will no longer be able to publish new apps… any related Google Play developer accounts will also be permanently suspended… Any new account that you try to open will be terminated as well." Google's general rule: "Repeated or serious violations… will result in termination of individual or related Google Play Developer accounts."</p>
+          </li>
+        </ol>
+        <div class="callout">
+          <p class="c-title">No grace period covers non-enrollment</p>
+          <p>
+            The only transition relief Google documented was for <em>reporting and fees</em>
+            ("once required" → October 1, 2026) and, for external-content-links
+            <em>downloads</em> only, the February 1, 2027 deadline. Neither excuses being
+            unenrolled. No amnesty for unreported pre–October 1 transactions was found —
+            reporting simply wasn't required before that date. Enforcement actions apply in
+            all regions unless otherwise stated, and stand unless an appeal is granted.
+          </p>
+          <div class="src">Enforcement Process — <a href="https://support.google.com/googleplay/android-developer/answer/9899234">support.google.com/googleplay/android-developer/answer/9899234</a></div>
+        </div>
+      </section>
+
+      <section id="paths">
+        <div class="sec-num">07 — THE FOUR SHAPES AN APP CAN TAKE</div>
+        <h2>Scope distinctions that change the answer</h2>
+        <p class="sec-intro">
+          Your app is shape (a). Shapes (c) and (d) are the only routes that avoid Google's
+          program entirely — and both require giving something up.
+        </p>
+        <div class="paths">
+          <div class="path you">
+            <div class="p-top">
+              <h3>(a) Stripe inside the app</h3>
+              <span class="chip fail">You are here — non-compliant</span>
+            </div>
+            <p>
+              "Alternative billing within the app" → Payments §8 + the US alternative billing
+              program. Enrollment, API integration, 24-hour reporting (since Oct 1, 2026), and
+              the 10% subscription fee are all required. Offering Stripe <em>alongside</em>
+              Google Play Billing instead of <em>instead of</em> it does not change any of
+              these duties — only the integration flow differs.
+            </p>
+          </div>
+          <div class="path">
+            <div class="p-top">
+              <h3>(b) Link out to a web checkout</h3>
+              <span class="chip warn">Different program — still enrollment</span>
+            </div>
+            <p>
+              The <strong>external content links (ECL)</strong> program — a separate enrollment
+              under Payments §9, completed <em>before</em> using any links, with its own APIs.
+              Fees apply to transactions or installs completed <strong>within 24 hours of
+              following the link</strong>: recurring subscriptions 10%; app downloads are a
+              fixed fee — <strong>$2.85 per install for apps</strong> ($3.65 for games). All
+              transactions must be reported, including $0 free-trial starts; transaction
+              reporting runs from Oct 1, 2026, but download reporting is deferred to
+              <strong>February 1, 2027</strong>. <span class="flag">Conflict</span> Google's
+              earlier Sept 17, 2026 notice set that download deadline at December 1, 2026; the
+              Oct 21 update supersedes it. Note: an in-app button or webview to a Stripe
+              checkout page is ECL, not a loophole — §4 expressly lists "in-app webviews,
+              buttons, links…" as leading users to another payment method. You may enroll in
+              both programs at once.
+            </p>
+          </div>
+          <div class="path">
+            <div class="p-top">
+              <h3>(c) Buy on the web, use in the app</h3>
+              <span class="chip ok">Compliant — no program, no fee</span>
+            </div>
+            <p>
+              The consumption-only ("reader") model genuinely changes the answer: no Google
+              Play Billing, no alternative-billing enrollment, and no service fee on web sales —
+              <em>provided nothing can be purchased from within the app</em>. Google: "Google Play
+              allows any app to be consumption-only, even if it is part of a paid service. For
+              example, a user could log in when the app opens and access content paid for
+              somewhere else." Inside the app you may not link to the web checkout, but
+              non-link informational text is expressly allowed — e.g. "Go to our website to
+              upgrade your subscription to Premium" — and outside the app (email marketing and
+              other channels) you may promote alternative purchase options freely. The moment
+              the app itself offers the purchase or links to checkout, it falls back into (a)
+              or (b).
+            </p>
+          </div>
+          <div class="path">
+            <div class="p-top">
+              <h3>(d) Don't distribute via Play</h3>
+              <span class="chip ok">Outside the policy entirely</span>
+            </div>
+            <p>
+              The Payments policy governs "<strong>Play-distributed apps</strong>." The same APK
+              sold through other Android stores, your website, or preloads owes Google no
+              enrollment, reporting, or fee: "Android gives developers the freedom and
+              flexibility to distribute their apps on other Android app stores, directly from a
+              website, or through device preloads, all without using Google Play's billing
+              system." Caveat: channels linked to Play can pull an app back into Google's net —
+              ECL download fees, and Google's new third-party-store / Play Catalog Access
+              arrangements, under which apps distributed through Play's catalog still carry
+              Google's service fee.
+            </p>
+          </div>
+        </div>
+        <div class="src" style="margin-top:12px;">ECL program — <a href="https://support.google.com/googleplay/android-developer/answer/16470497">answer/16470497</a> · Payments explainer (reader apps, off-Play distribution) — <a href="https://support.google.com/googleplay/android-developer/answer/10281818?hl=en&ref_topic=12798386">answer/10281818</a></div>
+      </section>
+
+      <section id="user-choice">
+        <div class="sec-num">08 — ADDING GOOGLE PLAY BILLING ALONGSIDE STRIPE</div>
+        <h2>The “user choice” model: no compliance relief, real commercial advantages</h2>
+        <p class="sec-intro">
+          The US program expressly covers alternative billing offered “<strong>in lieu of or
+          alongside</strong>” Google Play Billing. Adding Play Billing (IAP) as a second
+          checkout option is therefore permitted — but it does not dilute, offset, or remove
+          any of the duties assessed elsewhere on this page. Enrollment in the alternative
+          billing program, 24-hour reporting, and the 10% service fee apply to every Stripe
+          transaction exactly as if Play Billing were not offered, and you additionally build
+          and maintain a second billing integration. What adding IAP buys is commercial and
+          operational, not regulatory.
+        </p>
+
+        <h3>1 · Conversion: one tap, no card form</h3>
+        <p>
+          Play Billing checkout completes with the payment method already stored on the
+          user's Google account — no card details to type into a third-party sheet inside the
+          app. A real slice of users will not enter card details that way, and for them the
+          Stripe-only paywall is a dead end. Play balance, gift cards, and carrier billing are
+          also available only through Google's checkout. Offering Play Billing alongside Stripe
+          lets card-willing users keep the Stripe route while card-unwilling users can still
+          subscribe.
+        </p>
+
+        <h3>2 · Google as merchant of record — on Play Billing sales only</h3>
+        <p>
+          On sales routed through Play Billing, Google handles sales tax / VAT collection and
+          remittance, payment fraud, chargebacks, and dunning — grace periods, account hold,
+          and payment-retry logic. On Stripe sales, all of that remains your own burden: tax
+          registration and remittance in the jurisdictions where you owe it, fraud and
+          chargeback handling, and your own failed-payment recovery. The tax piece alone is a
+          genuine operational load for a subscription sold across many jurisdictions.
+        </p>
+
+        <h3>3 · Built-in subscription lifecycle</h3>
+        <p>
+          Play Billing comes with Google's subscription machinery built in: account hold,
+          pause, resubscribe, proration, and managed price changes, plus subscription
+          management inside the Play Store, where users already manage their other
+          subscriptions. On Stripe, the equivalent lifecycle — holds, pauses, win-back,
+          proration, price-change consent — has to be built or bought. This applies only to
+          subscriptions sold through Play Billing; Stripe subscriptions still run on your own
+          lifecycle tooling.
+        </p>
+
+        <h3>4 · It must be a genuine option, not a decoy</h3>
+        <blockquote>
+          <p>“If Google Play Billing is also offered, all users must be able to access Google Play Billing in a <strong>consistent and reliable manner</strong>.”</p>
+          <div class="src">Program requirement — Offering an alternative billing system for users in the United States — <a href="https://support.google.com/googleplay/android-developer/answer/16497028?hl=en">support.google.com/googleplay/android-developer/answer/16497028</a></div>
+        </blockquote>
+        <p>
+          A buried, broken, or deliberately degraded Play Billing option does not satisfy the
+          program. If you offer it, it has to work for every user, every time.
+        </p>
+
+        <h3>Differential pricing: permitted — and the arithmetic behind it</h3>
+        <blockquote>
+          <p>Google “<strong>will not require a developer to set a price based on whether Google Play Billing is used</strong>.”</p>
+          <div class="src">US injunction policy update — <a href="https://support.google.com/googleplay/android-developer/answer/15582165">support.google.com/googleplay/android-developer/answer/15582165</a></div>
+        </blockquote>
+        <p>
+          There is no price-parity requirement in the US, so the Play Billing route may be
+          priced higher than the Stripe route. Whether it <em>should</em> be — and by how much —
+          is a matter of arithmetic. Under Google's current US fee structure, a subscription
+          sold through Play Billing costs a <strong>10% service fee + 5% billing fee = 15%
+          all-in</strong>, with payment processing included. The alternative route costs the
+          same <strong>10% service fee and no billing fee</strong>, but bears Stripe's own
+          processing on top — typically around <strong>2.9% + $0.30</strong> per charge.
+          Worked on a $100 subscription:
+        </p>
+        <ul>
+          <li><strong>Stripe route, at $100:</strong> $100 − 10% Google service fee − ~2.9% Stripe processing − $0.30 ≈ <strong>$87 net</strong>.</li>
+          <li><strong>Play Billing route, at the same $100:</strong> $100 − 15% all-in = <strong>$85 net</strong>.</li>
+          <li><strong>Play Billing route, at +15% ($115):</strong> $115 − 15% = <strong>$97.75 net</strong> — roughly $11 <em>more</em> per subscriber than the Stripe route.</li>
+        </ul>
+        <p>
+          The true cost gap between the two routes is therefore about 2 points, not 15: a
+          premium of roughly <strong>+2%</strong> on the Play Billing route would equalize
+          your net revenue across both checkouts. A <strong>+15% premium over-recovers</strong> —
+          it is permitted, but it functions as <em>steering</em>: at that gap most users will
+          choose Stripe, and you earn more from the few who don't. Price it knowingly, as a
+          steering decision, not as cost recovery.
+        </p>
+
+        <h3>The three-way choice, restated</h3>
+        <div class="paths">
+          <div class="path">
+            <div class="p-top">
+              <h3>(a) Stripe only</h3>
+              <span class="chip neutral">Cheapest net</span>
+            </div>
+            <p>
+              Full program duties — enrollment, API integration, 24-hour reporting — plus the
+              10% service fee and Stripe processing. No second integration to maintain, and the
+              best net per subscriber, provided your paywall converts card-willing users well.
+            </p>
+          </div>
+          <div class="path">
+            <div class="p-top">
+              <h3>(b) Both — user choice</h3>
+              <span class="chip neutral">Same duties + IAP benefits</span>
+            </div>
+            <p>
+              The same program duties and 10% on every Stripe sale, <em>plus</em> a Play Billing
+              integration to build and maintain. In return: one-tap conversion for
+              card-unwilling users, Google as merchant of record, and the built-in lifecycle —
+              on Google-routed sales only, at 15% all-in.
+            </p>
+          </div>
+          <div class="path">
+            <div class="p-top">
+              <h3>(c) Play Billing only</h3>
+              <span class="chip ok">Only variant with no program</span>
+            </div>
+            <p>
+              The only configuration that eliminates the alternative billing program entirely:
+              no enrollment, no 24-hour reporting, no external-transaction APIs. The cost is
+              the 15% all-in fee on every sale and the loss of your Stripe funnel, pricing
+              control, and direct billing relationship.
+            </p>
+          </div>
+        </div>
+        <p style="margin-top:16px;">
+          Bottom line: if your Stripe paywall already converts well and your subscribers are
+          card-willing, adding IAP buys you nothing you need. Its case rests on conversion you
+          are currently losing, and on offloading tax, fraud, chargeback, and lifecycle work
+          for the sales Google routes — never on compliance.
+        </p>
+      </section>
+
+      <section id="eea">
+        <div class="sec-num">09 — IF YOU HAVE EEA USERS</div>
+        <h2>The EEA is the same architecture, enforced earlier and harder</h2>
+        <p>
+          For EEA users the structure is identical in kind — alternative billing is a
+          DMA-driven, opt-in-if-you-offer-it program with mandatory Play Console enrollment,
+          program terms, and API integration — but Google has enforced it <strong>earlier and
+          continuously</strong>: EEA developers have had to integrate the alternative billing
+          APIs since <strong>March 13, 2024</strong> and to "report to Google Play all authorised
+          transactions from users in the EEA within 24 hours" with <strong>no "once required"
+          deferral</strong>, and service fees were payable throughout (before June 30, 2026, the
+          without-user-choice fee was the standard fee reduced by 3%; from June 30, 2026 the EEA
+          table converges with the US one — 10% for auto-renewing subscriptions at every tier,
+          20%/25% for other digital goods on new/existing installs, 10% on the first $1M). The
+          EEA program adds an eligibility condition the US page lacks: the developer "must be a
+          registered business." Link-outs in the EEA are likewise a separate enrolled program —
+          the <strong>External Offers Program</strong>, distinct from US ECL — whose June 4, 2026
+          terms charge a 0% initial acquisition fee plus an ongoing 10% (subscriptions) / 20%
+          (other) fee and €1.20 per app download for transactions and installs within 24 hours
+          of the link. In short: if any of your subscribers are in the EEA, the "we report
+          nothing" position has been non-compliant there since 2024, not just since October.
+        </p>
+        <div class="src">EEA alternative billing — <a href="https://support.google.com/googleplay/android-developer/answer/12348241?hl=en-ZA">answer/12348241</a> · EEA external offers — <a href="https://support.google.com/googleplay/android-developer/answer/14372887">answer/14372887</a></div>
+      </section>
+
+      <section id="open">
+        <div class="sec-num">10 — HONEST UNCERTAINTIES</div>
+        <h2>Open questions this research could not close</h2>
+        <ul>
+          <li><strong>January 28, 2026.</strong> The date the December 2025 changes "came into force" is consistently reported in secondary sources (including a listed company's annual-report summary of Google's announcement), but no current Google page found states it. Google's live pages present enrollment simply as a standing condition.</li>
+          <li><strong>Will the October 1 fees and reporting survive court scrutiny?</strong> Google presents them as program terms; industry commentary calls them unilateral and unapproved. No court ruling was found. In flux.</li>
+          <li><strong>The commercial settlement's exact legal status</strong> — as distinct from the withdrawn motion — is reported inconsistently ("abandoned" vs "intact"); no court docket document was read directly in this research.</li>
+          <li><strong>Injunction expiry.</strong> Secondary reporting (Mondaq) puts the injunction-era policies' end at November 1, 2027; Google's page says only that changes apply "during the effective dates of the injunction." Not confirmed from the injunction text itself.</li>
+          <li><strong>User-choice variant.</strong> The US program covers alternative billing "in lieu of or alongside" Google Play Billing; the alongside (user-choice) integration guide exists, but its US-specific enrollment nuances were not separately verified.</li>
+        </ul>
+        <p>
+          Confidence is high on the core verdict, the enrollment/reporting duties, and the fee
+          table — all rest on Google's own pages, with the two anchor pages you supplied read
+          live on October 26, 2026. The settlement narrative (medium confidence) is the part
+          resting on reputable secondary reporting.
+        </p>
+      </section>
+
+      <section id="sources">
+        <div class="sec-num">SOURCES</div>
+        <h2>Sources</h2>
+        <h3>Primary — Google</h3>
+        <ol class="sources">
+          <li><span class="s-name">US injunction policy update</span> (July 2025 page, updated through Oct 2026) — <a href="https://support.google.com/googleplay/android-developer/answer/15582165">https://support.google.com/googleplay/android-developer/answer/15582165</a></li>
+          <li><span class="s-name">Offering an alternative billing system for users in the United States</span> (Oct 2026) — <a href="https://support.google.com/googleplay/android-developer/answer/16497028?hl=en">https://support.google.com/googleplay/android-developer/answer/16497028?hl=en</a></li>
+          <li><span class="s-name">Payments policy</span> — <a href="https://support.google.com/googleplay/android-developer/answer/9858738?hl=en-GB">https://support.google.com/googleplay/android-developer/answer/9858738?hl=en-GB</a></li>
+          <li><span class="s-name">Understanding Google Play's Payments policy</span> — <a href="https://support.google.com/googleplay/android-developer/answer/10281818?hl=en&ref_topic=12798386">https://support.google.com/googleplay/android-developer/answer/10281818?hl=en&amp;ref_topic=12798386</a></li>
+          <li><span class="s-name">Enrolling in the external content links program (US)</span> — <a href="https://support.google.com/googleplay/android-developer/answer/16470497">https://support.google.com/googleplay/android-developer/answer/16470497</a></li>
+          <li><span class="s-name">In-app integration guidance for alternative billing only</span> — <a href="https://developer.android.com/google/play/billing/alternative/alternative-billing-without-user-choice-in-app?hl=en">https://developer.android.com/google/play/billing/alternative/alternative-billing-without-user-choice-in-app?hl=en</a></li>
+          <li><span class="s-name">Backend integration guidance for monetization outside of Google Play Billing</span> — <a href="https://developer.android.com/google/play/billing/outside-gpb-backend">https://developer.android.com/google/play/billing/outside-gpb-backend</a></li>
+          <li><span class="s-name">Enforcement Process</span> — <a href="https://support.google.com/googleplay/android-developer/answer/9899234">https://support.google.com/googleplay/android-developer/answer/9899234</a></li>
+          <li><span class="s-name">Offering an alternative billing system for users in the EEA</span> — <a href="https://support.google.com/googleplay/android-developer/answer/12348241?hl=en-ZA">https://support.google.com/googleplay/android-developer/answer/12348241?hl=en-ZA</a></li>
+          <li><span class="s-name">Enroll your app in the external offers program (EEA)</span> — <a href="https://support.google.com/googleplay/android-developer/answer/14372887">https://support.google.com/googleplay/android-developer/answer/14372887</a></li>
+        </ol>
+        <h3>Secondary — settlement &amp; timeline reporting</h3>
+        <ol class="sources" start="11">
+          <li><span class="s-name">MacRumors</span>, Jul 16, 2026 (updated) — <a href="https://www.macrumors.com/2026/07/15/google-third-party-app-stores/">https://www.macrumors.com/2026/07/15/google-third-party-app-stores/</a></li>
+          <li><span class="s-name">MLex</span>, Jul 15, 2026 — <a href="https://www.mlex.com/mlex/articles/2501221/google-epic-withdraw-bid-to-modify-us-play-store-injunction">https://www.mlex.com/mlex/articles/2501221/google-epic-withdraw-bid-to-modify-us-play-store-injunction</a></li>
+          <li><span class="s-name">Engadget</span>, Jul 15, 2026 — <a href="https://www.engadget.com/2215452/google-allow-third-party-app-stores-android-july-22/">https://www.engadget.com/2215452/google-allow-third-party-app-stores-android-july-22/</a></li>
+          <li><span class="s-name">GamesBeat (DeanBeat)</span> on the proposed RPMI fee caps — <a href="https://gamesbeat.com/the-significance-of-the-settlement-between-epic-games-and-google-the-deanbeat/">https://gamesbeat.com/the-significance-of-the-settlement-between-epic-games-and-google-the-deanbeat/</a></li>
+          <li><span class="s-name">PPC Land</span> on the Nov 4, 2025 joint motion / RPMI — <a href="https://ppc.land/google-and-epic-propose-android-settlement-modifying-antitrust-injunction/">https://ppc.land/google-and-epic-propose-android-settlement-modifying-antitrust-injunction/</a></li>
+          <li><span class="s-name">Mondaq</span>, "Update Your App: External Purchase Developments" — <a href="https://www.mondaq.com/unitedstates/it-and-internet/1825852/update-your-app-external-purchase-developments-for-apple-google">https://www.mondaq.com/unitedstates/it-and-internet/1825852/update-your-app-external-purchase-developments-for-apple-google</a></li>
+          <li><span class="s-name">AppCharge</span> program analysis (industry commentary) — <a href="https://www.appcharge.com/blog/making-sense-of-google-payment-programs-ecl-billing-choice-level-up-and-the-global-model">https://www.appcharge.com/blog/making-sense-of-google-payment-programs-ecl-billing-choice-level-up-and-the-global-model</a></li>
+          <li><span class="s-name">Huuuge annual report</span> (Dec 9, 2025 changes in force Jan 28, 2026) — <a href="https://files.quartr.com/reports/4af84-2026-03-20.pdf?ref=U3RvY2tBbmFseXNpcw==">https://files.quartr.com/reports/4af84-2026-03-20.pdf?ref=U3RvY2tBbmFseXNpcw==</a></li>
+        </ol>
+      </section>
+
+      <footer>
+        Assessment prepared October 26, 2026, from Google's published policy pages, Play Console
+        help, and developer.android.com guides, supplemented by reputable reporting on the
+        Google–Epic litigation. This is a policy-compliance assessment, not legal advice; for a
+        binding read on your specific app, confirm with counsel or Google Play policy support.
+      </footer>
+
+    </div>
+  </body>
+</html>
