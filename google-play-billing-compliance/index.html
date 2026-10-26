@@ -676,10 +676,10 @@
       </section>
 
       <section id="paths">
-        <div class="sec-num">07 — THE FOUR SHAPES AN APP CAN TAKE</div>
+        <div class="sec-num">07 — THE FIVE SHAPES AN APP CAN TAKE</div>
         <h2>Scope distinctions that change the answer</h2>
         <p class="sec-intro">
-          Your app is shape (a). Shapes (c) and (d) are the only routes that avoid Google's
+          Your app is shape (a). Shapes (d) and (e) are the only routes that avoid Google's
           program entirely — and both require giving something up.
         </p>
         <div class="paths">
@@ -698,7 +698,26 @@
           </div>
           <div class="path">
             <div class="p-top">
-              <h3>(b) Link out to a web checkout</h3>
+              <h3>(b) Native Stripe and native Google Play Billing</h3>
+              <span class="chip neutral">Compliant — same program as (a)</span>
+            </div>
+            <p>
+              Both payment options presented natively in the app — the "user choice" model.
+              The alternative billing program covers alternative billing offered "<em>in lieu
+              of or alongside</em>" Google Play Billing, so this is the same enrollment as
+              shape (a); Play Billing itself needs no enrollment. The duties split by route:
+              <strong>Stripe transactions</strong> carry 24-hour reporting and the 10% service
+              fee, exactly as in (a); <strong>Google Play Billing transactions</strong> are
+              handled entirely by Google, which deducts its 15% all-in fee — nothing to
+              report. Play Billing must be accessible to all users "in a consistent and
+              reliable manner" — a genuine option, not a decoy. The commercial case for this
+              shape, and the differential-pricing arithmetic, are covered in
+              <a href="#user-choice">§8</a>.
+            </p>
+          </div>
+          <div class="path">
+            <div class="p-top">
+              <h3>(c) Link out to a web checkout</h3>
               <span class="chip warn">Different program — still enrollment</span>
             </div>
             <p>
@@ -713,13 +732,15 @@
               earlier Sept 17, 2026 notice set that download deadline at December 1, 2026; the
               Oct 21 update supersedes it. Note: an in-app button or webview to a Stripe
               checkout page is ECL, not a loophole — §4 expressly lists "in-app webviews,
-              buttons, links…" as leading users to another payment method. You may enroll in
-              both programs at once.
+              buttons, links…" as leading users to another payment method. And ECL is
+              link-out by definition: there is no native-screen variant of it — the moment
+              payment happens inside the app, the app is in shape (a) or (b), not (c). You may
+              enroll in both programs at once.
             </p>
           </div>
           <div class="path">
             <div class="p-top">
-              <h3>(c) Buy on the web, use in the app</h3>
+              <h3>(d) Buy on the web, use in the app</h3>
               <span class="chip ok">Compliant — no program, no fee</span>
             </div>
             <p>
@@ -732,13 +753,13 @@
               non-link informational text is expressly allowed — e.g. "Go to our website to
               upgrade your subscription to Premium" — and outside the app (email marketing and
               other channels) you may promote alternative purchase options freely. The moment
-              the app itself offers the purchase or links to checkout, it falls back into (a)
-              or (b).
+              the app itself offers the purchase or links to checkout, it falls back into (a),
+              (b) or (c).
             </p>
           </div>
           <div class="path">
             <div class="p-top">
-              <h3>(d) Don't distribute via Play</h3>
+              <h3>(e) Don't distribute via Play</h3>
               <span class="chip ok">Outside the policy entirely</span>
             </div>
             <p>
